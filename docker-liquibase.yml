@@ -1,0 +1,7 @@
+services:
+  lq:
+    image: liquibase/liquibase:4.29
+    volumes:
+      - ./src/main/resources/db:/liquibase/db
+      - ./src/main/resources/liquibase.docker.properties:/liquibase/liquibase.docker.properties
+    command: ["--defaultsFile=", "liquibase.properties"]
