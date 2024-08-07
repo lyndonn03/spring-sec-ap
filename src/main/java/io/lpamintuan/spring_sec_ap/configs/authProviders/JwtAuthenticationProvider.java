@@ -1,5 +1,7 @@
 package io.lpamintuan.spring_sec_ap.configs.authProviders;
 
+import javax.crypto.SecretKey;
+
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -7,30 +9,35 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
+
 @Component
-public class BasicAuthenticationProvider implements AuthenticationProvider {
+public class JwtAuthenticationProvider implements AuthenticationProvider {
 
     private final UserDetailsService userDetailsService;
-    private final PasswordEncoder passwordEncoder;
+    private final SecretKey jwtSigningKey;
 
-    public BasicAuthenticationProvider(UserDetailsService userDetailsService, PasswordEncoder passwordEncoder) {
+    public JwtAuthenticationProvider(SecretKey jwtSigningKey, UserDetailsService userDetailsService) {
         this.userDetailsService = userDetailsService;
-        this.passwordEncoder = passwordEncoder;
+        this.jwtSigningKey = jwtSigningKey;
     }
 
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-        UserDetails user = userDetailsService.loadUserByUsername((String) authentication.getPrincipal());
-        if(user == null)
+        if(!authentication.getPrincipal().toString().equalsIgnoreCase("Bearer"))
             return null;
-        if(passwordEncoder.matches(authentication.getCredentials().toString(), user.getPassword())) {
-            return new UsernamePasswordAuthenticationToken(user.getUsername(), null, user.getAuthorities());
-        } else {
-            throw new BadCredentialsException("Invalid credentials.");
+        try {
+            Jws<Claims> jwt = Jwts.parser().verifyWith(jwtSigningKey).build().parseSignedClaims(authentication.getCredentials().toString());
+            String username = jwt.getPayload().getSubject();
+            UserDetails user = userDetailsService.loadUserByUsername(username);
+            return new UsernamePasswordAuthenticationToken(username, null, user.getAuthorities());
+        } catch(JwtException ex) {
+            throw new BadCredentialsException("Invalid authorization token.");
         }
     }
 
@@ -38,7 +45,5 @@ public class BasicAuthenticationProvider implements AuthenticationProvider {
     public boolean supports(Class<?> authentication) {
         return authentication.equals(UsernamePasswordAuthenticationToken.class);
     }
-
-    
     
 }
