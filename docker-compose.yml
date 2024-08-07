@@ -2,9 +2,9 @@ services:
   app:
     image: maven:3.9.8-eclipse-temurin-17
     environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: admin
-      POSTGRES_URL: jdbc:postgresql://db:5432/secdb
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_URL: jdbc:postgresql://db:5432/${POSTGRES_DB}
     ports:
       - 8080:8080
     working_dir: /usr/app
@@ -12,17 +12,33 @@ services:
       - maven-repo:/root/.m2
       - .:/usr/app
     command: ["mvn", "spring-boot:run"]
+    depends_on:
+      - db
+      - lq
 
   db:
     image: postgres:16.1
     environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: admin
-      POSTGRES_DB: secdb
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
       - 5432:5432
     volumes:
       - psqldata:/var/lib/postgresql/data
+
+  lq:
+    image: liquibase/liquibase:4.29
+    volumes:
+      - ./src/main/resources/db:/liquibase/db
+      - ./src/main/resources/liquibase.docker.properties:/liquibase/liquibase.docker.properties
+    environment:
+      LIQUIBASE_COMMAND_USERNAME: ${POSTGRES_USER}
+      LIQUIBASE_COMMAND_PASSWORD: ${POSTGRES_PASSWORD}
+      LIQUIBASE_COMMAND_URL: jdbc:postgresql://db:5432/${POSTGRES_DB}
+    command: ["update"]
+    depends_on:
+      - db
 
 volumes:
   psqldata:
