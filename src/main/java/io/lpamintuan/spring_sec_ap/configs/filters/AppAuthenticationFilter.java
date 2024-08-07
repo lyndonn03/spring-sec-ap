@@ -3,6 +3,7 @@ package io.lpamintuan.spring_sec_ap.configs.filters;
 import java.io.IOException;
 import java.util.Base64;
 
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -36,19 +37,18 @@ public class AppAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         String authHeader = request.getHeader("Authorization");
         try {
-            if(authHeader == null)
-                this.entryPoint.commence(request, response, new AuthenticationServiceException("Unauthorized"));
-            else {
+            if(authHeader != null) {
                 String[] creds = authHeader.split(" ");
                 if(creds[0].equalsIgnoreCase("Basic")) {
-                    String[] decodedCreds = new String(Base64.getDecoder().decode(creds[1])).split(":");
-                    Authentication auth = new UsernamePasswordAuthenticationToken(decodedCreds[0], decodedCreds[1]);
-                    Authentication authenticatedUser = authenticationManager.authenticate(auth);
-                    SecurityContextHolder.getContext().setAuthentication(authenticatedUser);
+                    creds = new String(Base64.getDecoder().decode(creds[1])).split(":");
                 }
+                Authentication auth = new UsernamePasswordAuthenticationToken(creds[0], creds[1]);
+                Authentication authenticatedUser = authenticationManager.authenticate(auth);
+                SecurityContextHolder.getContext().setAuthentication(authenticatedUser);
             }
             filterChain.doFilter(request, response);
         } catch(AuthenticationException ae) {
+            log.error(authHeader, ae);
             this.entryPoint.commence(request, response, ae);
         }
     }
