@@ -48,7 +48,6 @@ public class AppAuthenticationFilter extends OncePerRequestFilter {
             }
             filterChain.doFilter(request, response);
         } catch(AuthenticationException ae) {
-            log.error(authHeader, ae);
             this.entryPoint.commence(request, response, ae);
         }
     }

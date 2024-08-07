@@ -1,4 +1,18 @@
 services:
+  app:
+    image: maven:3.9.8-eclipse-temurin-17
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: admin
+      POSTGRES_URL: jdbc:postgresql://db:5432/secdb
+    ports:
+      - 8080:8080
+    working_dir: /usr/app
+    volumes:
+      - maven-repo:/root/.m2
+      - .:/usr/app
+    command: ["mvn", "spring-boot:run"]
+
   db:
     image: postgres:16.1
     environment:
@@ -12,3 +26,4 @@ services:
 
 volumes:
   psqldata:
+  maven-repo:
