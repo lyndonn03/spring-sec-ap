@@ -4,13 +4,23 @@ This repository shows you how to implement multiple ways of authentication to ac
 
 ## Run the Code
 
-I've used `docker` to simplify the development environment. Thus, you need to install `docker` on your system to run this. Use the command below to run the application.
+Before anything else, you need to create a `.env` file with variables listed below.
+
+```bash
+# .env
+
+POSTGRES_USER=<username>
+POSTGRES_PASSWORD=<password>
+POSTGRES_DB=<db_name>
+```
+
+I've used `docker` to simplify the development environment. Thus, `docker` must be installed in your system. Use the command below to run the application.
 
 ```bash
 docker compose up
 ```
 
-This will also run the `liquibase-docker` service which migrates the database changelogs in `src/main/resources/db/changelog/migrations` automatically. If you want to add models and changelogs, you can use the commands below to migrate new changelogs and rollback changes. Make sure to run the command above first so that `liquibase` can access the `db` service.
+The command will also run the `lq (liquibase)` service which migrates the database changelogs in `src/main/resources/db/changelog/migrations` automatically. If you want to add models and changelogs manually while the application is running, you can use the commands below to migrate new sql changelogs and rollback changes.
 
 ```bash
 # check the liquibase status
@@ -27,11 +37,10 @@ docker compose run --rm lq rollback-count --count=n
 
 ## How It Works
 
-In this project, I just made the authentication types as simple as possible. I've created
-two authentication providers:
+In this project, there are two simple authentication providers that authenticates the user based on the authentication type. These are:
 
-1. [BasicAuthenticationProvider](https://github.com/lyndonn03/spring-sec-ap/blob/main/src/main/java/io/lpamintuan/spring_sec_ap/configs/authProviders/BasicAuthenticationProvider.java)
-2. [JwtAuthenticationProvider](https://github.com/lyndonn03/spring-sec-ap/blob/main/src/main/java/io/lpamintuan/spring_sec_ap/configs/authProviders/JwtAuthenticationProvider.java)
+1. [BasicAuthenticationProvider](https://github.com/lyndonn03/spring-sec-ap/blob/main/src/main/java/io/lpamintuan/spring_sec_ap/configs/authProviders/BasicAuthenticationProvider.java) for `HttpBasic`
+2. [JwtAuthenticationProvider](https://github.com/lyndonn03/spring-sec-ap/blob/main/src/main/java/io/lpamintuan/spring_sec_ap/configs/authProviders/JwtAuthenticationProvider.java) for `JWT`
 
 These two authentication providers are managed by the `ProviderManager` bean, which is an implementation of `AuthenticationManager`.
 
