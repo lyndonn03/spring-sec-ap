@@ -36,7 +36,7 @@ public class SecurityConfig {
             AppAuthenticationEntryPoint aae) throws Exception {
 
         http.authorizeHttpRequests(c -> {
-            c.requestMatchers(HttpMethod.POST, "/account/login")
+            c.requestMatchers(HttpMethod.POST, "/account/login", "/account/register")
                 .permitAll();
             c.requestMatchers(HttpMethod.GET, "/")
                 .authenticated();

@@ -2,7 +2,9 @@ package io.lpamintuan.spring_sec_ap.controllers;
 
 import org.springframework.web.bind.annotation.RestController;
 
+import io.lpamintuan.spring_sec_ap.models.UserAccountDetails;
 import io.lpamintuan.spring_sec_ap.representations.ResponseAuth;
+import io.lpamintuan.spring_sec_ap.representations.ResponseData;
 import io.lpamintuan.spring_sec_ap.representations.dto.UserAccountDetailsDTO;
 import io.lpamintuan.spring_sec_ap.services.AuthService;
 import jakarta.validation.Valid;
@@ -30,6 +32,16 @@ public class AuthController {
     public ResponseEntity<ResponseAuth> login(@Valid @RequestBody UserAccountDetailsDTO userAccountDetails) {
         ResponseAuth authCreds = authService.login(userAccountDetails);
         return new ResponseEntity<>(authCreds, HttpStatus.OK);
+    }
+
+    @PostMapping(path = "/register", consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ResponseData<UserAccountDetailsDTO>> register(
+        @Valid @RequestBody UserAccountDetailsDTO userAccountDetails) {
+        authService.save(userAccountDetails);
+        ResponseData<UserAccountDetailsDTO> responseData = 
+            new ResponseData<>(userAccountDetails, HttpStatus.CREATED, "Created Successfully.");
+        return new ResponseEntity<>(responseData, HttpStatus.CREATED);
     }
     
     

@@ -9,6 +9,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import io.jsonwebtoken.Jwts;
+import io.lpamintuan.spring_sec_ap.models.UserAccountDetails;
+import io.lpamintuan.spring_sec_ap.repositories.UserAccountDetailsRepository;
 import io.lpamintuan.spring_sec_ap.representations.ResponseAuth;
 import io.lpamintuan.spring_sec_ap.representations.dto.UserAccountDetailsDTO;
 
@@ -16,11 +18,16 @@ import io.lpamintuan.spring_sec_ap.representations.dto.UserAccountDetailsDTO;
 public class AuthService {
 
     private final UserAccountDetailsService userAccountDetailsService;
+    private final UserAccountDetailsRepository userAccountDetailsRepository;
     private final PasswordEncoder passwordEncoder;
     private final SecretKey jwtSigningKey;
     
-    public AuthService(UserAccountDetailsService userAccountDetailsService, SecretKey jwtSigningKey, PasswordEncoder passwordEncoder) {
+    public AuthService(UserAccountDetailsService userAccountDetailsService, 
+            SecretKey jwtSigningKey, 
+            PasswordEncoder passwordEncoder, 
+            UserAccountDetailsRepository userAccountDetailsRepository) {
         this.userAccountDetailsService = userAccountDetailsService;
+        this.userAccountDetailsRepository = userAccountDetailsRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtSigningKey = jwtSigningKey;
     }
@@ -35,6 +42,13 @@ public class AuthService {
             return new ResponseAuth(jws, null, null);
         } else
             throw new BadCredentialsException("Username and Password does not match.");
+    }
+
+    public UserAccountDetails save(UserAccountDetailsDTO userAccountDetails) {
+        UserAccountDetails newUser = new UserAccountDetails();
+        newUser.setUsername(userAccountDetails.getUsername());
+        newUser.setPassword(passwordEncoder.encode(userAccountDetails.getPassword()));
+        return userAccountDetailsRepository.save(newUser);
     }
 
 }
