@@ -35,6 +35,22 @@ docker compose run --rm lq rollback-count --count=n
 # Note: lq is the name of the liquibase docker service in the docker-compose.yml
 ```
 
+## Creating a User Account
+
+To create a user account, use the route `localhost:8080/account/register`. This route accepts json and outputs the user data when successful except for password.
+
+```bash
+
+# using curl
+
+curl --location 'localhost:8080/account/register' \
+--header 'Content-Type: application/json' \
+--data '{
+    "username": "user123",
+    "password": "password"
+}'
+```
+
 ## How It Works
 
 In this project, there are two simple authentication providers that authenticates the user based on the authentication type. These are:
@@ -49,7 +65,7 @@ These two authentication providers are managed by the `ProviderManager` bean, wh
 The BasicAuthenticationProvider is used if the user prefer to use `HttpBasic` authentication type. The user will provide his/her username and password, encode and bind it to the header with key "Authorization" and value "Basic \<the-encoded64-username:password>". For example:
 
 ```bash
-#using curl
+# using curl
 
 curl --location 'localhost:8080/' \
 --header 'Authorization: Basic dXNlcm5hbWU6cGFzc3dvcmQ='
@@ -64,7 +80,7 @@ The provider will then validates the user credentials, stores the user details i
 The JwtAuthenticationProvider works if the request has a header "Authorization: Bearer \<jwt-token>". The token can be retrieved by logging in using user credentials in route `localhost:port/account/login`. This route will generate a valid signed jwt which you can bind to the header of every request. Note that the application will generate new `SecretKey` every time you run the application. So the previous jwt will be invalid when you rerun the program. Example of a request:
 
 ```bash
-#using curl
+# using curl
 
 curl --location 'localhost:8080/' \
 --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c='
